@@ -26,6 +26,7 @@ a random port, random uuid, and a user provided password.
 
 import argparse
 import http.server
+import os
 from posixpath import basename
 from random import randrange
 import socketserver
@@ -51,9 +52,11 @@ class FileServerHandler(http.server.BaseHTTPRequestHandler):
             if uuid_str.strip() == str(self.server.secret_uuid_path).strip() and password.strip() == self.server.password:
                 with open(self.server.file_path, 'rb') as file:
                     filename = basename(self.server.file_path)
+                    file_size = os.path.getsize(self.server.file_path)
                     self.send_response(200)
                     self.send_header('Content-type', 'application/octet-stream')
                     self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+                    self.send_header('Content-Length', str(file_size))  # Add Content-Length header
                     self.end_headers()
                     self.wfile.write(file.read())
             else:
